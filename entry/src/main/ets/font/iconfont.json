@@ -1,0 +1,191 @@
+{
+  "id": "4706322",
+  "name": "guildtool",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "201642",
+      "name": "3.1 评论",
+      "font_class": "31pinglun",
+      "unicode": "e605",
+      "unicode_decimal": 58885
+    },
+    {
+      "icon_id": "1075",
+      "name": "照相机",
+      "font_class": "zhaoxiangji",
+      "unicode": "e604",
+      "unicode_decimal": 58884
+    },
+    {
+      "icon_id": "749943",
+      "name": "个人",
+      "font_class": "geren",
+      "unicode": "e62d",
+      "unicode_decimal": 58925
+    },
+    {
+      "icon_id": "42075563",
+      "name": "个人-copy",
+      "font_class": "geren-copy",
+      "unicode": "eb39",
+      "unicode_decimal": 60217
+    },
+    {
+      "icon_id": "42075562",
+      "name": "探索-copy",
+      "font_class": "tansuo-copy",
+      "unicode": "eb38",
+      "unicode_decimal": 60216
+    },
+    {
+      "icon_id": "351774",
+      "name": "探索",
+      "font_class": "tansuo",
+      "unicode": "e623",
+      "unicode_decimal": 58915
+    },
+    {
+      "icon_id": "42075564",
+      "name": "聊天气泡-copy",
+      "font_class": "liaotianqipao-copy",
+      "unicode": "eb3a",
+      "unicode_decimal": 60218
+    },
+    {
+      "icon_id": "1468191",
+      "name": "聊天气泡",
+      "font_class": "liaotianqipao",
+      "unicode": "e72b",
+      "unicode_decimal": 59179
+    },
+    {
+      "icon_id": "15391383",
+      "name": "地图",
+      "font_class": "ditu",
+      "unicode": "e622",
+      "unicode_decimal": 58914
+    },
+    {
+      "icon_id": "42075534",
+      "name": "地图",
+      "font_class": "ditu-copy",
+      "unicode": "eb37",
+      "unicode_decimal": 60215
+    },
+    {
+      "icon_id": "42078084",
+      "name": "地图",
+      "font_class": "ditu-copy1",
+      "unicode": "eb3b",
+      "unicode_decimal": 60219
+    },
+    {
+      "icon_id": "7171910",
+      "name": "编辑",
+      "font_class": "bianji1",
+      "unicode": "e603",
+      "unicode_decimal": 58883
+    },
+    {
+      "icon_id": "201638",
+      "name": "编辑",
+      "font_class": "bianji",
+      "unicode": "e602",
+      "unicode_decimal": 58882
+    },
+    {
+      "icon_id": "77151",
+      "name": "朋友圈",
+      "font_class": "pengyouquan",
+      "unicode": "e600",
+      "unicode_decimal": 58880
+    },
+    {
+      "icon_id": "77828",
+      "name": "收藏",
+      "font_class": "shoucang",
+      "unicode": "e601",
+      "unicode_decimal": 58881
+    },
+    {
+      "icon_id": "658040",
+      "name": "收藏",
+      "font_class": "shoucang1",
+      "unicode": "e666",
+      "unicode_decimal": 58982
+    },
+    {
+      "icon_id": "672451",
+      "name": "个人_2",
+      "font_class": "geren2",
+      "unicode": "e6bc",
+      "unicode_decimal": 59068
+    },
+    {
+      "icon_id": "673795",
+      "name": "收藏_fill",
+      "font_class": "shoucangfill",
+      "unicode": "e6c9",
+      "unicode_decimal": 59081
+    },
+    {
+      "icon_id": "749780",
+      "name": "收藏",
+      "font_class": "shoucang2",
+      "unicode": "e60a",
+      "unicode_decimal": 58890
+    },
+    {
+      "icon_id": "879170",
+      "name": "收藏",
+      "font_class": "ego-fav",
+      "unicode": "e60c",
+      "unicode_decimal": 58892
+    },
+    {
+      "icon_id": "2076187",
+      "name": " 收藏2",
+      "font_class": "shoucang3",
+      "unicode": "e86d",
+      "unicode_decimal": 59501
+    },
+    {
+      "icon_id": "5387705",
+      "name": "服务",
+      "font_class": "fuwu",
+      "unicode": "eb36",
+      "unicode_decimal": 60214
+    },
+    {
+      "icon_id": "5650873",
+      "name": "服务",
+      "font_class": "fuwu1",
+      "unicode": "e617",
+      "unicode_decimal": 58903
+    },
+    {
+      "icon_id": "6556747",
+      "name": "朋友圈",
+      "font_class": "pengyouquan1",
+      "unicode": "e615",
+      "unicode_decimal": 58901
+    },
+    {
+      "icon_id": "11372682",
+      "name": "朋友圈",
+      "font_class": "pengyouquan2",
+      "unicode": "e8b4",
+      "unicode_decimal": 59572
+    },
+    {
+      "icon_id": "20266208",
+      "name": "收藏",
+      "font_class": "shoucang4",
+      "unicode": "e6de",
+      "unicode_decimal": 59102
+    }
+  ]
+}

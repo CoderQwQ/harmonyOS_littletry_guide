@@ -1,0 +1,512 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <meta http-equiv="Access-Control-Allow-Origin" content="*">
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css" />
+    <link rel="stylesheet" href="https://at.alicdn.com/t/c/font_4706322_5jr8zbx5wym.css" />
+    <!-- <link rel="stylesheet" type="text/css" href="https://a.amap.com/jsapi_demos/static/demo-center/css/prety-json.css"> -->
+
+    <style>
+        html,
+        body,
+        #container {
+            width: 100%;
+            height: 100%;
+        }
+
+        .iconfont {
+            font-family: "iconfont" !important;
+            font-size: 20px;
+            color: #25A5F7;
+            margin-top: 10px;
+            margin: 18px;
+        }
+
+        .amap-marker-content img {
+            width: 25px;
+            height: 34px;
+        }
+
+        .input-item1 {
+            width: 200px;
+            height: 100px;
+        }
+
+        .marker {
+            position: absolute;
+            top: -35px;
+            right: -70px;
+            color: #fff;
+            padding: 4px 10px;
+            box-shadow: 1px 1px 1px rgba(10, 10, 10, .2);
+            white-space: nowrap;
+            font-size: 18px;
+            font-family: "";
+            background-color: #25A5F7;
+            border-radius: 3px;
+
+        }
+
+        #firsticon {
+            margin-left: 10px;
+        }
+
+        .input-card {
+            width: 30rem;
+            height: 80px;
+            z-index: 170;
+            bottom: 55px;
+            margin-right: 0;
+        }
+
+        .button1 {
+            width: 100px;
+            height: 50px;
+            position: absolute;
+            z-index: 170;
+            bottom: 150px;
+            right: 160px;
+            color: #f6fafc;
+            background-color: #126ab863;
+            border-radius: 20px;
+        }
+
+        .input-card .btn {
+            margin-right: .8rem;
+        }
+
+        .input-card1 {
+            margin-top: 10px;
+        }
+
+        .input-card .btn:last-child {
+            margin-right: 0;
+        }
+
+        .content-window-card {
+            position: relative;
+            width: 23rem;
+            padding: 0.75rem 0 0 1.25rem;
+            box-shadow: none;
+            bottom: 0;
+            left: 0;
+
+        }
+
+        .select1 {
+            width: 300px;
+            height: 20px;
+            z-index: 170;
+            bottom: 100px;
+            margin-right: 0;
+            color: #25A5F7;
+            margin-top: 6px;
+        }
+
+        .textline {
+            color: aqua;
+
+        }
+
+        .content-window-card p {
+            height: 2rem;
+        }
+
+        /* .marker-text {
+            position: relative;
+            top: -10px;
+            left: 10px;
+
+        } */
+    </style>
+    <title>地图</title>
+    <script type="text/javascript"
+            src="https://a.amap.com/jsapi_demos/static/demo-center/js/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript"
+            src="https://a.amap.com/jsapi_demos/static/demo-center/js/underscore-min.js"></script>
+    <script type="text/javascript">
+        window._AMapSecurityConfig = {
+            securityJsCode: "10ec30ec660ae7197149b40eaa954029",
+        };
+    </script>
+    <script type="text/javascript" src="https://a.amap.com/jsapi_demos/static/demo-center/js/backbone-min.js"></script>
+    <script type="text/javascript" src='https://a.amap.com/jsapi_demos/static/demo-center/js/prety-json.js'></script>
+    <script src="https://a.amap.com/jsapi_demos/static/demo-center/js/demoutils.js"></script>
+</head>
+
+<body>
+<!-- <p class="output">display received message send from ets</p> -->
+<div id="container"></div>
+<div id="panel"></div>、
+<button onclick="sendData()" class='button1'>生成附近景点</button>
+<div class="input-card">
+    <div class="input-item">
+        <input id="addMarker" type="button" class="btn" onclick="addMarker()" value="添加点标记">
+        <input id="clearMarker" type="button" class="btn" onclick="clearMarker()" value="删除点标记">
+        <input id="updateMarker" type="button" class="btn" onclick="updateContent()" value="显示地名">
+        <input id="updateLine" type="button" class="btn" onclick="writeRoute()" value="显示路线">
+        <div>
+            <input type="range" id="myrange" class="select1" min="1" max="5" step="1">
+        </div>
+    </div>
+    <div class="input-card1">
+        <i class="iconfont  icon-buhang" id="firsticon"></i>
+        <i class="iconfont icon-zihangche1"></i>
+        <i class="iconfont icon-qiche"></i>
+        <i class="iconfont icon-a-banche1"></i>
+        <i class="iconfont icon-ditiepiao"></i>
+    </div>
+</div>
+
+<script src="https://webapi.amap.com/maps?v=2.0&key=e4932aa78098893c579badb9f82b87e9&plugin=AMap.Driving"></script>
+
+<script>
+    var h5Port;
+    var output = document.querySelector('.output');
+    window.addEventListener('message', function (event) {
+        if (event.data === '__init_port__') {
+            if (event.ports[0] !== null) {
+                h5Port = event.ports[0]; // 1. 保存从应用侧发送过来的端口。
+                h5Port.onmessage = function (event) {
+                    // 2. 接收ets侧发送过来的消息。
+                    var msg = 'Got message from ets:';
+                    var result = event.data;
+                    if (typeof (result) === 'string') {
+                        console.info(`received string message from html5, string is: ${result}`);
+                        msg = msg + result;
+                    } else if (typeof (result) === 'object') {
+                        if (result instanceof ArrayBuffer) {
+                            console.info(`received arraybuffer from html5, length is: ${result.byteLength}`);
+                            msg = msg + 'length is ' + result.byteLength;
+                        } else {
+                            console.info('not support');
+                        }
+                    } else {
+                        console.info('not support');
+                    }
+                    output.innerHTML = msg;
+                }
+            }
+        }
+    })
+    // 3. 使用h5Port向应用侧发送消息。
+    function PostMsgToEts(data) {
+        if (h5Port) {
+            console.log(data)
+            h5Port.postMessage(data);
+        } else {
+            console.error('h5Port is null, Please initialize first');
+        }
+    }
+
+    //初始化地图
+    var marker, map = new AMap.Map('container', {
+        resizeEnable: true, //是否监控地图容器尺寸变化
+        zoom: 11, //初始地图级别
+    });
+
+    var options = {
+        'getCityWhenFail': true,
+        'panToLocation': true,
+        'enableHighAccuracy': true,
+        'showButton': true,//是否显示定位按钮
+        'position': 'RB',//定位按钮的位置
+        /* LT LB RT RB */
+        'offset': [10, 170],//定位按钮距离对应角落的距离
+        'showMarker': true,//是否显示定位点
+        'markerOptions': {//自定义定位点样式，同Marker的Options
+            'offset': new AMap.Pixel(-18, -36),
+            'content': '<img src="https://a.amap.com/jsapi_demos/static/resource/img/user.png" style="width:36px;height:36px" />'
+        },
+        'showCircle': true,//是否显示定位精度圈
+        'circleOptions': {//定位精度圈的样式
+            'strokeColor': '#0093FF',
+            'noSelect': true,
+            'strokeOpacity': 0.5,
+            'strokeWeight': 1,
+            'fillColor': '#02B0FF',
+            'fillOpacity': 0.25
+        }
+    }
+    AMap.plugin(["AMap.Geolocation"], function () {
+        var geolocation = new AMap.Geolocation(options);
+        map.addControl(geolocation);
+        geolocation.getCurrentPosition(function (status, result) {
+            if (status == 'complete') {
+                onComplete(result); // 定位成功的回调函数
+            } else {
+                onError(result); // 定位失败的回调函数
+            }
+        });
+    });
+    var currentareaLngLat = [];
+    // 定位成功的回调函数
+    function onComplete(data) {
+        currentareaLngLat = data;
+        console.log(data.position);
+    }
+    // 定位失败的回调函数
+    function onError(data) {
+        alert('定位失败');
+    }
+
+
+    var opts = {
+        'position': 'RB',
+        'offset': [10, 250]
+    }
+    //缩放控件
+    AMap.plugin(['AMap.ToolBar',], function () {
+        var tool = new AMap.ToolBar(opts);
+        map.addControl(tool);
+    });
+    var gomodes = 3;
+    window.onload = function () {
+        // 监听滑块值的变化
+        document.getElementById("myrange").addEventListener('input', function () {
+            gomodes = document.getElementById("myrange").value;
+            console.log(gomodes);
+        });
+    };
+    const sliderToTransportMap = {
+        1: '步行',
+        2: '自行车',
+        3: '小汽车',
+        4: '公交车',
+        5: '地铁'
+    };
+    const data = {
+        latitude: 30.2874,                            //30.287459,
+        longitude: 120.153576,
+        transportation: sliderToTransportMap[gomodes],
+        types: '博物馆,文物古迹',
+    }
+    console.log(currentareaLngLat.toString());
+    //console.log(JSON.stringify(data));
+    function sendData() {
+        // 使用fetch API发送POST请求
+        fetch('http://192.168.142.1:5000/recommend', { // 替换YOUR_SERVER_ENDPOINT为你的服务器端点
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data) // 将JavaScript对象转换为JSON字符串
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('网络响应不是ok ' + response.statusText);
+                }
+                return response.json();
+            }) // 解析JSON响应
+            .then(data => {
+                if (data.high_similarity && data.high_similarity.length > 0) {
+
+                    for (var i = 0; i < 5; i++) {
+                        positionList[i][1] = data.high_similarity[i].latitude;
+                        positionList[i][0] = data.high_similarity[i].longitude;
+                        positionname[i] = data.high_similarity[i].name;
+                        positioninfo[i] = data.high_similarity[i].short_intro;
+                    }
+
+                } else {
+                    console.log('加载数据失败')
+                }
+                console.log('Success:', data); // 处理响应数据
+            })
+            .catch((error) => {
+                console.error('Error:', error); // 处理错误
+            });
+    }
+
+    function logMapinfo() {
+        map.getCity(function (info) {
+            if (typeof (info.city) === 'string') {
+                var allinfo = {
+                    "cityname": ` ${info.city} `,
+                    "lnglat": currentareaLngLat.toString(),
+                    "travelway": JSON.stringify(gomodes),
+                };
+
+                PostMsgToEts(JSON.stringify(allinfo));
+                //console.log(JSON.stringify(allinfo));
+            } else if (info === null) {
+                PostMsgToEts("无法获取");
+            }
+            else {
+                PostMsgToEts("其他错误");
+            }
+        });
+    }
+    logMapinfo();
+    //绑定地图移动事件
+    map.on('moveend', logMapinfo);
+    var positionname = ['大王庙大殿', '新四军苏北指挥部（江都县抗日民主政府）旧址', '望春楼', '大桥革命纪念馆', '新四军挺进纵队二三支队司令部旧址']
+    var markerList = [];
+    var positionList = [[119.451578, 32.416850], [118.642242, 29.55131], [121.514198, 29.887053], [119.710046, 32.363107], [119.711063, 32.367219]];
+    var positioninfo = ['大王庙大殿是一座历史悠久的文物保护单位，具有深厚的文化内涵和历史价值。重建后的建筑群规模宏大，建筑风格古朴典雅，展示了扬州地区传统建筑文化的独特魅力。大殿内供奉着两位吴王的塑像，富有历史感，同时也表达了扬州人民对两位吴王的感激之情。此外，大王庙还与财神庙相关联，每年春节期间都有大量游客前来参拜祈福，营造出浓厚的民俗文化氛围。',
+        '扬州御码头是一个历史悠久的景点，具有深厚的文化底蕴和重要的历史价值。这里的建筑和设施保存完好，能够让游客感受到历史的厚重和文化的独特魅力。此外，这里还有许多历史典故和传说，更加丰富了游客的游览体验。虽然御码头本身并没有特别显著的特色，但是它所代表的历史和文化价值使得它成为一个值得推荐的景点。',
+        '高邮御碑亭是乾隆皇帝亲笔题写碑文并建造的亭子，具有较高的历史价值和文化价值。此外，亭子的建筑风格古朴典雅，与周围的园林环境相得益彰。推荐游客前往参观。',
+        '虽然棣园已被破坏严重，且历史建筑已被拆除，但整体规模尚在，仍然具有一定的历史和文化价值。因此，推荐指数为3分。',
+        '扬州玉器博物馆是一座极具文化价值的博物馆，其丰富的展品和深入的展示方式能够让人们全面了解中国玉器的历史和文化。博物馆的环境优雅，空间布局合理，是学习和欣赏中国玉器文化的理想场所。因此，我非常推荐扬州玉器博物馆。']
+    function addMarker() {
+        if (!markerList.length) {
+            for (let i = 0; i < positionList.length; i++) {
+                marker = new AMap.Marker({
+                    icon: "https://a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-default.png",
+                    position: positionList[i],
+                    offset: new AMap.Pixel(-13, -30)
+                });
+                markerList.push(marker);
+                markerList[i].on('click', function (e) {
+                    openInfo(positionList[i], positionname[i], positioninfo[i]);
+                })
+                // marker.on('click', openInfo('fjaljfsd'));
+            }
+        }
+        map.add(markerList);
+    }
+    var ifchange = 0;
+    function updateContent() {
+
+        if (!markerList) {
+            return;
+        }
+        if (ifchange === 0) {
+            for (let i = 0; i < markerList.length; i++) {
+                // 自定义点标记内容
+                var markerContent = document.createElement("div");
+
+                // 点标记中的图标
+                var markerImg = document.createElement("img");
+                markerImg.className = "markerlnglat";
+                markerImg.src = "https://a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-red.png";
+                markerContent.appendChild(markerImg);
+
+                // 点标记中的文本
+                var markerSpan = document.createElement("span");
+                markerSpan.className = 'marker';
+                markerSpan.innerHTML = positionname[i];
+                markerContent.appendChild(markerSpan);
+
+
+                markerList[i].setContent(markerContent); //更新点标记内容
+
+            }
+            ifchange = 1;
+        }
+        else {
+            clearMarker();
+            addMarker();
+            ifchange = 0;
+        }
+    }
+
+    // 清除 marker
+    function clearMarker() {
+        if (markerList) {
+            map.remove(markerList);
+            markerList = [];
+        }
+    }
+    //信息窗体
+    var infoWindow;
+    function openInfo(position, name, content) {
+        //构建信息窗体中显示的内容
+        var info = [];
+
+        info.push("<div style=\"padding:7px 0px 0px 0px;\"><h4>" + name + "</h4>");
+        info.push("<p class='input-item1'>" + content + "</p>");
+
+        infoWindow = new AMap.InfoWindow({
+            content: info.join("")  //使用默认信息窗体框样式，显示信息内容
+        });
+
+        infoWindow.open(map, position);
+    }
+    //路线规划
+
+    var drivingOption = {
+        Policy: AMap.DrivingPolicy.LEAST_DISTANCE, //规划策略
+        ferry: 1, // 是否可以使用轮渡
+        province: '浙', // 车牌省份的汉字缩写
+    }
+    // 构造路线导航类
+    var driving = new AMap.Driving(drivingOption)
+    var lngLatList = [];
+    function writeRoute() {
+        for (let i = 0; i < positionList.length - 2; i++) {
+            driving.search(new AMap.LngLat(positionList[i][0], positionList[i][1]), new AMap.LngLat(positionList[i + 1][0], positionList[i + 1][1]), function (status, result) {
+                if (status === 'complete') {
+                    if (result.routes && result.routes.length) {
+                        // 绘制第一条路线，也可以按需求绘制其它几条路线
+                        drawRoute(result.routes[0])
+                        log.success('绘制驾车路线完成')
+                    }
+                } else {
+                    log.error('获取驾车数据失败：' + result)
+                }
+            });
+        }
+    }
+    function drawRoute(route) {
+        var path = parseRouteToPath(route)
+        var startIcon = new AMap.Icon({
+            size: new AMap.Size(1, 1),
+            // 图标的取图地址
+            image: '//a.amap.com/jsapi_demos/static/demo-center/icons/dir-marker.png',
+            // 图标所用图片大小
+            imageSize: new AMap.Size(1, 1),
+
+        });
+        var startMarker = new AMap.Marker({
+            position: path[0],
+            icon: startIcon,
+            map: map
+        })
+
+        var endMarker = new AMap.Marker({
+            position: path[path.length - 1],
+            icon: startIcon,
+            map: map
+        })
+
+        var routeLine = new AMap.Polyline({
+            path: path,
+            isOutline: true,
+            outlineColor: '#00008B',
+            borderWeight: 2,
+            strokeWeight: 5,
+            strokeColor: '#0091ff',
+            lineJoin: 'round'
+        })
+
+        routeLine.setMap(map)
+
+        // 调整视野达到最佳显示区域
+        map.setFitView([startMarker, endMarker, routeLine])
+    }
+
+    // 解析DrivingRoute对象，构造成AMap.Polyline的path参数需要的格式
+    // DrivingResult对象结构参考文档 https://lbs.amap.com/api/javascript-api/reference/route-search#m_DriveRoute
+    function parseRouteToPath(route) {
+        var path = []
+
+        for (var i = 0, l = route.steps.length; i < l; i++) {
+            var step = route.steps[i]
+
+            for (var j = 0, n = step.path.length; j < n; j++) {
+                path.push(step.path[j])
+            }
+        }
+
+        return path
+    }
+
+</script>
+</body>
+
+</html>

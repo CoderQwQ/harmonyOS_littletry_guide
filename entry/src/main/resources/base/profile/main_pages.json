@@ -1,0 +1,18 @@
+{
+  "src": [
+    "pages/Index",
+    "pages/fuwu",
+    "pages/tansuo",
+    "pages/login",
+    "pages/Setting",
+    "pages/personpyq",
+    "pages/personinfo",
+    "pages/shoucang",
+    "pages/pyqcreate",
+    "pages/next_tuijian",
+    "pages/practice",
+    "pages/page1",
+    "pages/page2",
+    "pages/next_tansuo"
+  ]
+}
