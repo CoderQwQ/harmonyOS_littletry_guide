@@ -31,13 +31,7 @@ export struct Tuijian{
   @Link currentArea:string;
 
   @State cityname:string=this.currentArea;  //.split(':')[1].split(',')[0].replace('"','').replace('"','')
-  @State jingdian1:string='西湖'
-  @State jingdian2:string='黄山'
-  @State jingdian3:string='西湖'
-  @State jingdian4:string='黄山'
-  @State jingdian5:string='西湖'
-  @State jingdian6:string='黄山'
-  @State jingdian7:string='西湖'
+
 
   @State ItemArray:Array<Article>=[]
 
@@ -54,7 +48,7 @@ export struct Tuijian{
 
     httpRequest.request(
       // 填写HTTP请求的URL地址，可以带参数也可以不带参数。URL地址需要开发者自定义。请求的参数可以在extraData中指定
-      `http://192.168.3.16:5000?userId=3&city=${cityname_url}`,
+      `http://192.168.3.16:5000?userId=6&city=${cityname_url}`,
       {
         header: {
           'Content-Type': 'application/json',
@@ -102,6 +96,8 @@ export struct Tuijian{
       }
     );
   }
+
+
   build() {
     Scroll() {
       Column() {

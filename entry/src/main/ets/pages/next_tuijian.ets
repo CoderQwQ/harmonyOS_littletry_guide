@@ -13,7 +13,7 @@ struct Next_tansuo {
       let record = router.getParams() as Record<string, string>;
       if (record !== undefined && record !== null) {
         this.message1 = record['title']
-        this.message2=record['area']
+        this.message2 = record['area']
 
         console.info('接收到前一个页面的参数：', JSON.stringify(record))
       }
