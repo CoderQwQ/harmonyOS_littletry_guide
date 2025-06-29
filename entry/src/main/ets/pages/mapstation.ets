@@ -2,7 +2,18 @@
 import { webview } from '@kit.ArkWeb';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { router } from '@kit.ArkUI';
+import { abilityAccessCtrl, common } from '@kit.AbilityKit';
+let context = getContext(this) as common.UIAbilityContext;
+let atManager = abilityAccessCtrl.createAtManager();
 
+// 向用户请求位置权限设置。
+atManager.requestPermissionsFromUser(context, ["ohos.permission.APPROXIMATELY_LOCATION"]).then((data) => {
+  console.info('data:' + JSON.stringify(data));
+  console.info('data permissions:' + data.permissions);
+  console.info('data authResults:' + data.authResults);
+}).catch((error: BusinessError) => {
+  console.error(`Failed to request permissions from user. Code is ${error.code}, message is ${error.message}`);
+})
 
 @Component
 export struct MapDemo {
@@ -12,6 +23,7 @@ export struct MapDemo {
   @State receivedFromHtml: string = '';
   @State item: string = '杭州'
   @Link currentArea:string
+  // origin: string = "file:///";
   // 该内容可以放在onPageEnd生命周期中调用。
     postmessage() {
       try {
@@ -42,7 +54,7 @@ export struct MapDemo {
       console.error(`ErrorCode: ${(error as BusinessError).code},  Message: ${(error as BusinessError).message}`);
     }
   }
-    SendDataTOHTML(){
+  SendDataTOHTML(){
   try {
     if (this.ports && this.ports[1]) {
       this.ports[1].postMessageEvent(this.sendFromEts);
@@ -53,14 +65,44 @@ export struct MapDemo {
     console.error(`ErrorCode: ${(error as BusinessError).code},  Message: ${(error as BusinessError).message}`);
   }
 }
+
   build() {
     Column() {
       //展示接收到的来自HTML的内容
-      Text(this.receivedFromHtml)
+      //Text(this.receivedFromHtml)
       Web({ src: $rawfile('shouye.html'), controller: this.controller })
+        
         .onPageEnd((event)=>{
             this.postmessage()
             this.SendDataTOHTML()
+        })
+        .geolocationAccess(true)
+        .onGeolocationShow((event) => { // 地理位置权限申请通知
+          AlertDialog.show({
+            title: '位置权限请求',
+            message: '是否允许获取位置信息',
+            primaryButton: {
+              value: 'cancel',
+              action: () => {
+                if (event) {
+                  event.geolocation.invoke(event.origin, false, false); // 不允许此站点地理位置权限请求
+                }
+              }
+            },
+            secondaryButton: {
+              value: 'ok',
+              action: () => {
+                if (event) {
+                  event.geolocation.invoke(event.origin, true, false); // 允许此站点地理位置权限请求
+                }
+              }
+            },
+            cancel: () => {
+              if (event) {
+                event.geolocation.invoke(event.origin, false, false); // 不允许此站点地理位置权限请求
+              }
+            }
+          })
         })
 
     }
