@@ -5,24 +5,11 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:/Users/Y/.ohos/config/default_guildtool_f60-sttjgZZrG5xFJbM4M7TfSFy_mkkPTDRF-ZY1xk0=.cer",
-          "storePassword": "0000001BB05E41C9F1ED92FC3121222F6C6B2D76B430EABEA2C4605CEE9EAC2669B9F20DBD9C49995E17C2",
-          "keyAlias": "debugKey",
-          "keyPassword": "0000001B760FDBA71382371AB0B15EA9AFC7B3E34CCF5F3379B968034AEC91A118C10AEAAA80CD7E806775",
-          "profile": "C:/Users/Y/.ohos/config/default_guildtool_f60-sttjgZZrG5xFJbM4M7TfSFy_mkkPTDRF-ZY1xk0=.p7b",
-          "signAlg": "SHA256withECDSA",
-          "storeFile": "C:/Users/Y/.ohos/config/default_guildtool_f60-sttjgZZrG5xFJbM4M7TfSFy_mkkPTDRF-ZY1xk0=.p12"
-        }
-      },
-      {
-        "name": "guidetooldebugkey",
-        "type": "HarmonyOS",
-        "material": {
-          "storePassword": "00000019FE34685C96B2CEBE824D1FB4C4962A93F0C22DE646805B8F14253BBEBBB6118B6041A5BAC4",
-          "certpath": "F:/DevEcoDebugkeys/guidetool_debug.cer",
+          "storePassword": "00000019382128FCF33486022EB3D039DBF425E77F3B5F09D3342C5CE6B087E5C2AC61707A5015B1E8",
+          "certpath": "F:/DevEcoDebugkeys/guidetool_debug_new.cer",
           "keyAlias": "guidetool_debug",
-          "keyPassword": "00000019D192182E1D70D2999CD2B34A176A61C6ED31A29F9B7129B1F61A665C0DF8BC1200E2C9BD05",
-          "profile": "F:/DevEcoDebugkeys/guildtool_debugDebug.p7b",
+          "keyPassword": "00000019CDFC0796BF9195C8F60EDB3A1C127EDA222C63A5B41D2F0352AEC3BC56475340751BE709C0",
+          "profile": "F:/DevEcoDebugkeys/景点推荐_newDebug.p7b",
           "signAlg": "SHA256withECDSA",
           "storeFile": "F:/DevEcoDebugkeys/guidetool_debug.p12"
         }

@@ -16,7 +16,7 @@
 /**
  * Common constants for all features.
  */
-export default class CommonConstants {
+export class CommonConstants {
   /**
    * Small font size.
    */
@@ -86,4 +86,45 @@ export default class CommonConstants {
    * The set font size url.
    */
   static readonly SET_URL: string = 'pages/SetFontSizePage';
+
+  /**
+   * locatingTimeoutMs
+   */
+  static LOCATING_TIMEOUT_MS: number = 10000;
+
+  /**
+   * locatingPriority
+   */
+  static PRIORITY_LOCATING_SPEED: number = 0x502;
+
+  /**
+   * locationScenario
+   */
+  static NAVIGATION: number = 0x401;
+
+  /**
+   * locationSwitch
+   */
+  static LOCATION_SWITCH_OFF: number = 3301100;
+
+  /**
+   * locationFail
+   */
+  static LOCATION_FAILED: number = 3301200;
+
+  /**
+   * reverseGeocodingFailed
+   */
+  static REVERSE_GEOCODING_FAILED: number = 3301300;
+
+  /**
+   * reverseGeocodingFailed
+   */
+  static WIFI_BLUETOOTH_OFF: number = 3301800;
+
+  /**
+   * Information Window Title
+   */
+  static MARKER_TITLE: (uiContext: UIContext) => string = (uiContext: UIContext) =>
+  uiContext.getHostContext()!.resourceManager.getStringSync($r('app.string.geocoded_location'));
 }

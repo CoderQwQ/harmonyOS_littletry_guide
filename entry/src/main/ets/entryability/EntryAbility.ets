@@ -1,19 +1,42 @@
-import { AbilityConstant, UIAbility, Want } from '@kit.AbilityKit';
-import { hilog } from '@kit.PerformanceAnalysisKit';
+import { UIAbility, AbilityConstant, Want, abilityAccessCtrl } from '@kit.AbilityKit';
 import { window } from '@kit.ArkUI';
+import { BusinessError } from '@kit.BasicServicesKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+
+const TAG: string = '[EntryAbility]';
 
 export default class EntryAbility extends UIAbility {
-  onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
-    hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onCreate');
+  async onCreate(want: Want, launchParam: AbilityConstant.LaunchParam) {
+    hilog.info(0x0000, TAG, `EntryAbility onCreate`);
+    let atManager = abilityAccessCtrl.createAtManager();
+    try {
+      atManager.requestPermissionsFromUser(this.context,
+        ['ohos.permission.LOCATION', 'ohos.permission.APPROXIMATELY_LOCATION'])
+        .then((data) => {
+          hilog.info(0x0000, TAG, `data: ${JSON.stringify(data)}`);
+        })
+        .catch((err: BusinessError) => {
+          hilog.error(0x0000, TAG, `err: ${JSON.stringify(err)}`);
+        })
+    } catch (err) {
+      hilog.error(0x0000, TAG, `catch err->${JSON.stringify(err)}`);
+    }
   }
 
-  onDestroy(): void {
-    hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onDestroy');
+  onDestroy() {
+    hilog.info(0x0000, TAG, `EntryAbility onDestroy`);
   }
 
   onWindowStageCreate(windowStage: window.WindowStage): void {
     // Main window is created, set main page for this ability
-    hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
+    hilog.info(0x0000, TAG, `EntryAbility onWindowStageCreate`);
+    windowStage.getMainWindow((err, windowClass: window.Window) => {
+      if (err.code) {
+        hilog.error(0x0000, TAG, `Failed to obtain the main window. Code:${err.code}, message:${err.message}`);
+        return;
+      }
+      AppStorage.setOrCreate('deviceWidth', windowClass.getWindowProperties().windowRect.width);
+    });
 
     windowStage.loadContent('pages/Index', (err) => {
       if (err.code) {
@@ -22,20 +45,43 @@ export default class EntryAbility extends UIAbility {
       }
       hilog.info(0x0000, 'testTag', 'Succeeded in loading the content.');
     });
+    let windowClass: window.Window = windowStage.getMainWindowSync();
+
+    let isLayoutFullScreen = true;
+    windowClass.setWindowLayoutFullScreen(isLayoutFullScreen).then(() => {
+      hilog.info(0x0000, TAG, 'Succeeded in setting the window layout to full-screen mode.');
+    }).catch((err: BusinessError) => {
+      hilog.error(0x0000, TAG, `Failed to set the window layout to full-screen mode. Code is ${err.code}, message is ${err.message}`);
+    });
+
+    let type = window.AvoidAreaType.TYPE_SYSTEM;
+    let avoidArea = windowClass.getWindowAvoidArea(type);
+    let bottomRectHeight = avoidArea.bottomRect.height;
+    AppStorage.setOrCreate('bottomRectHeight', bottomRectHeight);
+
+    windowClass.on('avoidAreaChange', (data) => {
+      if (data.type === window.AvoidAreaType.TYPE_SYSTEM) {
+        let topRectHeight = data.area.topRect.height;
+        AppStorage.setOrCreate('topRectHeight', topRectHeight);
+      } else if (data.type === window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR) {
+        let bottomRectHeight = data.area.bottomRect.height;
+        AppStorage.setOrCreate('bottomRectHeight', bottomRectHeight);
+      }
+    });
   }
 
-  onWindowStageDestroy(): void {
+  onWindowStageDestroy() {
     // Main window is destroyed, release UI related resources
-    hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onWindowStageDestroy');
+    hilog.info(0x0000, TAG, `EntryAbility onWindowStageDestroy`);
   }
 
-  onForeground(): void {
+  onForeground() {
     // Ability has brought to foreground
-    hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onForeground');
+    hilog.info(0x0000, TAG, `EntryAbility onForeground`);
   }
 
-  onBackground(): void {
+  onBackground() {
     // Ability has back to background
-    hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onBackground');
+    hilog.info(0x0000, TAG, `EntryAbility onBackground`);
   }
 }

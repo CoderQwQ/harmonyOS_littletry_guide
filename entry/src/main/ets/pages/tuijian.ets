@@ -197,7 +197,8 @@ export struct OneItem{
           url:'pages/next_tuijian',
           params:{
             'title':this.oneItem.title,
-            'area':this.currentarea
+            'area':this.currentarea,
+            'breif':this.oneItem.brief
           }
         })
       }

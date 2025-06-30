@@ -4,6 +4,12 @@ import {Tuijian} from './tuijian'
 import {Tansuo}from './tansuo'
 import font from '@ohos.font';
 import router from '@ohos.router';
+import {LocationService} from './mapservice'
+import { connection } from '@kit.NetworkKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+
+const TAG = '[Index]'
+
 @Entry
 @Component
 struct Index {
@@ -17,7 +23,10 @@ struct Index {
       familySrc:'/font/iconfont.ttf'
     })
 
+
   }
+
+
   // 自定义导航页签的样式
   @Builder TabBuilder(title: string, targetIndex: number, selectedImg: string, normalImg: string) {
     Column() {
@@ -54,10 +63,11 @@ struct Index {
               .fontSize("18fp")
             // 内容项
             //Text("地图").width('100%').height('100%').textAlign(TextAlign.Center).fontSize("25fp")
-            MapDemo({
-              currentArea:this.currentArea
-            })
-          }.size({ width: '100%', height: '100%' })
+            // MapDemo({
+            //   currentArea:this.currentArea
+            // })
+            LocationService()
+          }.size({ width: '100%', height: '80%' })
         }.tabBar(this.TabBuilder('地图', 0,  '\ue622','\ueb37'))
 
         TabContent() {
