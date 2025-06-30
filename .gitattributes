@@ -1,0 +1,9 @@
+# 始终将 .ets 文件视为文本文件
+*.ets text
+
+# 指定 JSON 文件使用 LF 格式
+*.json text eol=lf
+
+# 二进制文件不转换
+*.png binary
+*.jpg binary

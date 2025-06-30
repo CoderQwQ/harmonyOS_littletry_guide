@@ -2,18 +2,22 @@ import { router } from '@kit.ArkUI';
 import { http } from '@kit.NetworkKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import TitleBarComponent from '../view/TitleBarComponent'
+import { lvMarkdownIn } from '@luvi/lv-markdown-in'
+import { lvText } from '@luvi/lv-markdown-in'
+
 @Entry
 @Component
 struct Next_tansuo {
-  @State message1: string = 'Hello World';
-  @State message2: string=''
+  @State area: string = '杭州';
+  @State jingdian: string='杭州电子科技大学'
   @State introduceinfo:string=''
+  @State imgsrc:ResourceStr = ''
   aboutToAppear(): void {
     if (router.getParams() !== undefined && router.getParams() !== null) {
       let record = router.getParams() as Record<string, string>;
       if (record !== undefined && record !== null) {
-        this.message1 = record['title']
-        this.message2 = record['area']
+        this.jingdian = record['title']
+        this.area = record['area']
 
         console.info('接收到前一个页面的参数：', JSON.stringify(record))
       }
@@ -36,7 +40,7 @@ struct Next_tansuo {
         },
         // 当使用POST请求时此字段用于传递请求体内容，具体格式与服务端协商确定
         extraData:{
-          "model": "qwen-plus",
+          "model": "qwen-plus-2025-04-28",
           "messages": [
             {
               "role": "system",
@@ -44,7 +48,7 @@ struct Next_tansuo {
             },
             {
               "role": "user",
-              "content": `介绍一下+${this.message2}+'的'+${this.message1}`
+              "content": `请介绍一下${this.area}'的'${this.jingdian}`
             }
           ]
         },
@@ -76,20 +80,20 @@ struct Next_tansuo {
     }
 
   build() {
+    Scroll(){
+      Column() {
+        TitleBarComponent()
+        Text(this.jingdian)
+          .fontSize(30)
+          .fontWeight(FontWeight.Bold)
 
-   Scroll(){
-    Column() {
-      TitleBarComponent()
-      Text(this.message1)
-        .fontSize(30)
-        .fontWeight(FontWeight.Bold)
-
-      Row() {
-        Text(this.introduceinfo)
+        Row() {
+          // Text(this.introduceinfo)
+          //   .copyOption(CopyOptions.InApp)
+          lvMarkdownIn({ text: this.introduceinfo })
+        }
+        .borderRadius(5)
       }
-      .backgroundColor('#ffa0b3ca')
-      .borderRadius(5)
-    }
 
     }
 
