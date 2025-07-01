@@ -5,16 +5,20 @@ import {Tansuo}from './tansuo'
 import font from '@ohos.font';
 import router from '@ohos.router';
 import {LocationService} from './mapservice'
-import { connection } from '@kit.NetworkKit';
-import { hilog } from '@kit.PerformanceAnalysisKit';
+import { LocationInter, ViewpointInter } from '../model/LocationInter';
 
 const TAG = '[Index]'
 
 @Entry
 @Component
 struct Index {
-  @State currentArea:string=''
-  @State currentIndex: number = 0
+  @State locality:string= ''
+  @State location:LocationInter = {
+    latitude :22.878538,
+    longitude :113.886642
+  }
+  @State currentIndex: number = 0.
+  @State  RecommenderViewpointArray:Array<ViewpointInter> = []
   private controller: TabsController = new TabsController()
   aboutToAppear(): void {
     //注册字体
@@ -61,13 +65,14 @@ struct Index {
               .fontColor("#ff0c0c0c")
               .textAlign(TextAlign.Center)
               .fontSize("18fp")
+              //.position({ top: 50 })
             // 内容项
             //Text("地图").width('100%').height('100%').textAlign(TextAlign.Center).fontSize("25fp")
             // MapDemo({
             //   currentArea:this.currentArea
             // })
-            LocationService()
-          }.size({ width: '100%', height: '80%' })
+            LocationService({locality : this.locality, location: this.location, RecommenderViewpointArray: this.RecommenderViewpointArray})
+          }.size({ width: '100%', height: '90%' })
         }.tabBar(this.TabBuilder('地图', 0,  '\ue622','\ueb37'))
 
         TabContent() {
@@ -104,7 +109,9 @@ struct Index {
               .textAlign(TextAlign.Center)
               .fontSize("18fp")
             Tuijian({
-              currentArea:this.currentArea
+              locality:this.locality,
+              location:this.location,
+              RecommenderViewpointArray:this.RecommenderViewpointArray
             })
           }.size({ width: '100%', height: '100%' })
         }.tabBar(this.TabBuilder('推荐', 2, '\ueb38','\ue623'))

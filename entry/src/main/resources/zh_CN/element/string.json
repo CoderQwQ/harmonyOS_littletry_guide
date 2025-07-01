@@ -87,6 +87,10 @@
     {
       "name": "wifi_bluetooth_switch",
       "value": "WiFi或蓝牙关闭，请检查设置"
+    },
+    {
+      "name": "recommend_viewpoint_null",
+      "value": "景点推荐未获取"
     }
   ]
 }
