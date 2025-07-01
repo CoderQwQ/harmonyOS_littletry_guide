@@ -17,3 +17,9 @@ export interface LocationInter {
   latitude: number,
   longitude: number
 }
+
+export interface ViewpointInter{
+  latitude: number,
+  longitude: number,
+  viewpointname: string
+}

@@ -15,14 +15,14 @@
 
 import { promptAction } from '@kit.ArkUI';
 import { AsyncCallback, BusinessError } from '@kit.BasicServicesKit';
-import { MapComponent, mapCommon, map } from '@kit.MapKit';
+import { MapComponent, mapCommon, map, navi } from '@kit.MapKit';
 import { geoLocationManager } from '@kit.LocationKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common, wantAgent } from '@kit.AbilityKit';
 import { backgroundTaskManager } from '@kit.BackgroundTasksKit';
 import { connection } from '@kit.NetworkKit';
 import { CommonConstants } from '../common/constants/CommonConstants';
-import { LocationInter } from '../model/LocationInter';
+import { LocationInter, ViewpointInter } from '../model/LocationInter';
 
 const TAG = '[mapservice]';
 
@@ -31,6 +31,8 @@ const TAG = '[mapservice]';
 @Component
 export struct LocationService {
   @State address: string = '';
+  @Link @Watch ('WatchLocalityChanged') locality:string;
+  @Link @Watch ('WatchLocationChanged') location:LocationInter;
   @State isBackgroundRunning: boolean = false;
   @State isOnLocationChange: boolean = false;
   @State isCacheLocation: boolean = false;
@@ -38,7 +40,58 @@ export struct LocationService {
   private mapController?: map.MapComponentController;
   private callback?: AsyncCallback<map.MapComponentController>;
   private marker?: map.Marker;
+  private RouteMarker? : map.Marker
   private mapOption?: mapCommon.MapOptions;
+
+  WatchLocationChanged(){
+    console.info("mapservice side:"+String(this.location))
+  }
+  WatchLocalityChanged(){
+    console.info("mapservice side:"+this.locality)
+  }
+  WatchViewpointArrayChanged(){
+    for (let i=0;i<this.RecommenderViewpointArray.length;i++){
+      console.info(this.RecommenderViewpointArray[i].viewpointname+" "+String(this.RecommenderViewpointArray[i].latitude)
+      +" "+String(this.RecommenderViewpointArray[i].longitude))
+    }
+  }
+
+  // @State RouteMarkerOptions: mapCommon.MarkerOptions = {
+  //   position: {
+  //       latitude: 30.266371,
+  //       longitude: 120.088348
+  //     }
+  //   ,
+  //   rotation: 0,
+  //   visible: true,
+  //   zIndex: 0,
+  //   alpha: 1,
+  //   anchorU: 0.5,
+  //   anchorV: 1,
+  //   clickable: true,
+  //   draggable: true,
+  //   flat: false
+  // };
+
+  @Link @Watch('WatchViewpointArrayChanged')RecommenderViewpointArray:Array<ViewpointInter>;
+  //   = [
+  //   {
+  //     viewpointname:"西溪天堂商业街",
+  //     latitude:30.266371,
+  //     longitude:120.088348
+  //   },
+  //   {
+  //     viewpointname:"清晨假日山庄",
+  //     latitude:29.967799,
+  //     longitude:120.1298
+  //   },
+  //   {
+  //     viewpointname:"杭州宋城",
+  //     latitude:30.16963,
+  //     longitude:120.098912
+  //   }
+  // ]
+
 
   aboutToAppear(): void {
     if (!this.judgeHasNet()) {
@@ -58,11 +111,14 @@ export struct LocationService {
     this.callback = async (err, mapController) => {
       if (!err) {
         this.mapController = mapController;
+        //this.RouteMarker = await this.mapController.addMarker(this.RouteMarkerOptions);
       }else{
         console.info("map initial failed")
       }
     };
+    //this.MarkCityPoints()
   }
+
 
   aboutToDisappear(): void {
     if (this.isBackgroundRunning) {
@@ -214,6 +270,11 @@ export struct LocationService {
       // [Start get_addresses_from_location]
       geoLocationManager.getAddressesFromLocation(reverseGeocodeRequest, async (err, data) => {
         if (data) {
+          console.info(data[0]?.locality)
+          this.locality = String(data[0]?.locality)
+          this.location.latitude = Number(data[0]?.latitude)
+          this.location.longitude = Number(data[0]?.longitude)
+
           this.address = data[0]?.placeName || '';
           // [StartExclude  get_addresses_from_location]
           this.marker?.setInfoWindowVisible(true);
@@ -291,6 +352,103 @@ export struct LocationService {
   }
   // [End stop_continuous_task]
 
+  //景点推荐部分（点标记以及路径绘制）
+  async MarkViewpointPoints(){
+    if (this.RecommenderViewpointArray.length != 0){
+      let tempViewpointArray:Array<ViewpointInter>= this.RecommenderViewpointArray
+      const tempRMOArray:Array<mapCommon.MarkerOptions> = []
+      for (let i=0; i<tempViewpointArray.length;i++){
+        tempRMOArray.push({
+          position: {
+            latitude: tempViewpointArray[i].latitude,
+            longitude: tempViewpointArray[i].longitude
+          }
+        ,
+          rotation: 0,
+          visible: true,
+          zIndex: 0,
+          alpha: 1,
+          anchorU: 0.5,
+          anchorV: 1,
+          clickable: true,
+          draggable: true,
+          flat: false,
+          title:"景点",
+          snippet:tempViewpointArray[i].viewpointname
+        })
+      }
+      try{
+        for (let i=0;i<tempViewpointArray.length;i++){
+          this.RouteMarker = await this.mapController?.addMarker(tempRMOArray[i])
+        }
+      }catch (err){
+        console.info(`RouterMarker error code:${err.code}, message${err.message}` )
+      }
+
+    }else{
+      console.info("景点推荐未获取")
+      this.getUIContext().getPromptAction().showToast({
+        message: $r('app.string.recommend_viewpoint_null'),
+        duration: 2000
+      });
+    }
+  };
+
+  async MakeViewpointsRoute(pointsArray:Array<ViewpointInter>) {
+    let params: navi.DrivingRouteParams = {
+      // 起点的经纬度
+      origins: [{
+        "latitude": Number(this.marker?.getPosition()["latitude"]),
+        "longitude": Number(this.marker?.getPosition()["longitude"])
+      }],
+      // 终点的经纬度
+      destination: {
+        "latitude": Number(this.marker?.getPosition()["latitude"]),
+        "longitude": Number(this.marker?.getPosition()["longitude"])
+      },
+      // 路径的途经点
+      waypoints: pointsArray,
+      language: "zh_CN"
+    };
+    try {
+      const result = await navi.getDrivingRoutes(params);
+      console.info(`Succeeded in getting driving routes. result is ${JSON.stringify(result)}`);
+      let points: Array<mapCommon.LatLng> = []
+      result.routes[0].steps.forEach((step)=>{
+        step.roads.forEach((road)=>{
+          road.polyline.forEach((polyline)=>{
+            points.push(polyline)
+          })
+        })
+      })
+      // let points: Array<mapCommon.LatLng> = result.routes[0].overviewPolyline==null? []:result.routes[0].overviewPolyline;
+      console.info("naviDemo", "routes length" + result.routes.length);
+      // polyline初始化参数
+      let polylineOption: mapCommon.MapPolylineOptions = {
+        points: points,
+        clickable: true,
+        startCap: mapCommon.CapStyle.BUTT,
+        endCap: mapCommon.CapStyle.BUTT,
+        geodesic: false,
+        jointType: mapCommon.JointType.BEVEL,
+        visible: true,
+        width: 10,
+        zIndex: 10,
+        gradient: false,
+        color: 0xFF007DFF
+      }
+      // 创建polyline
+      this.mapController?.addPolyline(polylineOption);
+
+    } catch (error) {
+      const err: BusinessError = error as BusinessError;
+      console.error(`Failed in getting driving routes. Code is ${err.code}, message is ${err.message}`);
+    }
+
+
+
+  };
+
   locationFailedAlert(errCode: number) {
     if (errCode === CommonConstants.LOCATION_SWITCH_OFF) {
       this.getUIContext().getPromptAction().showToast({
@@ -357,7 +515,7 @@ export struct LocationService {
             .height('100%')
         }
       }
-      .height('83%')
+      .height('90%')
       .width('100%')
 
       Column() {
@@ -478,6 +636,42 @@ export struct LocationService {
             .backgroundColor($r('app.color.blue'))
             .fontColor($r('app.color.white'))
             .fontWeight(FontWeight.Medium)
+            .margin({
+              bottom: 12
+            })
+
+          Row(){
+            Button("绘制景点")//$r('app.string.get_current_location')
+              .onClick(() => {
+                this.MarkViewpointPoints()
+              })
+              .width('40%')
+              .height(40)
+              .backgroundColor($r('app.color.blue'))
+              .fontColor($r('app.color.white'))
+              .fontWeight(FontWeight.Medium)
+              .margin({
+                bottom: 12,
+                left: 12,
+                right:12
+              })
+
+            Button("绘制路径")
+              .onClick(()=>{
+                this.MakeViewpointsRoute(this.RecommenderViewpointArray)
+              })
+              .width('40%')
+              .height(40)
+              .backgroundColor($r('app.color.blue'))
+              .fontColor($r('app.color.white'))
+              .fontWeight(FontWeight.Medium)
+              .margin({
+                bottom: 12,
+                left: 12,
+                right:12
+              })
+          }
+
         }
         .width('100%')
         .constraintSize({ maxWidth: '100%' })

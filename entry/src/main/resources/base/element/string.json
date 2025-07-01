@@ -443,6 +443,10 @@
     {
       "name": "wifi_bluetooth_switch",
       "value": "WiFi or Bluetooth is off, please check the settings"
+    },
+    {
+      "name": "recommend_viewpoint_null",
+      "value": "recommended viewpoint is null"
     }
 
 

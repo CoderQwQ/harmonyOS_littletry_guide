@@ -1,54 +1,89 @@
 import router from '@ohos.router';
 import { http } from '@kit.NetworkKit';
 import { BusinessError } from '@kit.BasicServicesKit';
+import { LocationInter, ViewpointInter } from '../model/LocationInter';
 
 @Observed
 export class Article{
-  id: string= '';
-  imgSource:ResourceStr = '';
-  title:string = '';
-  brief:string = '';
-  weburl:string= '';
-  //introduce:string = '';
+  id:number
+  city:string
+  cover_image:ResourceStr
+  description:string
+  distance_km:number
+  latitude:number
+  longitude:number
+  name:string
+  rating:number
+  score:number
 
-  constructor(id: string, imgSource: ResourceStr, title: string, brief: string, weburl: string) {
+  constructor(id:number, city: string, cover_image: ResourceStr, description: string, distance_km: number, latitude: number,
+    longitude:number,name:string, rating:number, score:number) {
     this.id = id
-    this.imgSource = imgSource
-    this.title = title
-    this.brief = brief
-    this.weburl = weburl;
+    this.city = city
+    this.cover_image = cover_image
+    this.description = description
+    this.distance_km = distance_km
+    this.latitude = latitude
+    this.longitude = longitude
+    this.name = name
+    this.rating = rating
+    this.score = score
   }
 }
 
-interface jingdian{
-  address : string
-  name : string
+interface recommendedjingdian{
+  city:string
+  cover_image:ResourceStr
+  description:string
+  distance_km:number
+  latitude:number
+  longitude:number
+  name:string
+  rating:number
+  score:number
 
 }
 
 @Component
 export struct Tuijian{
-  @Link currentArea:string;
+  @Link @Watch("WatchLocalityChanged")locality:string;
+  @Link @Watch("WatchLocationChanged")location:LocationInter;
+  @Link RecommenderViewpointArray:Array<ViewpointInter>;
 
-  @State cityname:string=this.currentArea;  //.split(':')[1].split(',')[0].replace('"','').replace('"','')
+  @State cityname:string=this.locality;  //.split(':')[1].split(',')[0].replace('"','').replace('"','')
 
 
   @State ItemArray:Array<Article>=[]
 
   aboutToAppear(): void {
   }
+
+  WatchLocationChanged(){
+    console.info("tuijian side:"+String(this.location))
+  }
+  WatchLocalityChanged(){
+    console.info("tuijian side:"+this.locality)
+  }
+
+  //向服务端发送数据
   sendhttp(){
     let httpRequest = http.createHttp();
     httpRequest.on('headersReceive', (header) => {
       console.info('header: ' + JSON.stringify(header));
     });
     //let result=encodeURIComponent(this.currentArea)   //.split(':')[1].split(',')[0].replace('"','').replace('"','')
-    let cityname_url = encodeURIComponent('杭州市')
+    let cityname_url = encodeURIComponent(this.cityname)
+    if (this.cityname.endsWith("市")) {
+      cityname_url =encodeURIComponent(this.cityname.slice(0, -1));
+    }
+
+    let lat = this.location.latitude
+    let lon = this.location.longitude
     console.log(cityname_url)
 
     httpRequest.request(
       // 填写HTTP请求的URL地址，可以带参数也可以不带参数。URL地址需要开发者自定义。请求的参数可以在extraData中指定
-      `http://192.168.3.16:5000?userId=6&city=${cityname_url}`,
+      `http://192.168.3.16:5000/recommend?n=5&city=${cityname_url}&lat=${lat}&lon=${lon}`,
       {
         header: {
           'Content-Type': 'application/json',
@@ -67,20 +102,36 @@ export struct Tuijian{
 
           if (response.responseCode == http.ResponseCode.OK){
             try {
-              const items = response.result['recommended_jingdians'] as jingdian[]
+              const items = response.result['recommended_jingdians'] as recommendedjingdian[]
               const tempArtical:Array<Article> = []
+              const tempRecommenderViewpointArray:Array<ViewpointInter>=[]
               for (let i = 0;i < items.length; i++){
                 console.info(`第${i}个景点：${items[i].name}`)
-                console.info(items[i].address)
+                console.info(items[i].name)
                 tempArtical.push(new Article(
-                  i.toString(),$r('app.media.jingdian1'),items[i].name,items[i].address,"https://www.bilibili.com/video/BV1tM4m1a7bG"
+                  i,
+                  items[i].city,
+                  items[i].cover_image,
+                  items[i].description,
+                  items[i].distance_km,
+                  items[i].latitude,
+                  items[i].longitude,
+                  items[i].name,
+                  items[i].rating,
+                  items[i].score
                 ))
+                tempRecommenderViewpointArray.push({
+                  latitude:items[i].latitude,
+                  longitude:items[i].longitude,
+                  viewpointname:items[i].name
+                })
               }
               this.ItemArray = tempArtical
               console.info(this.ItemArray.length.toString())
-              console.info(this.ItemArray[0].id)
-              console.info(this.ItemArray[0].title)
-              console.info(this.ItemArray[0].brief)
+              console.info(String(this.ItemArray[0].id))
+              console.info(this.ItemArray[0].name)
+              console.info(this.ItemArray[0].description)
+              this.RecommenderViewpointArray = tempRecommenderViewpointArray
 
             } catch (e){
               console.error(`数据处理出错：${e}`)
@@ -123,10 +174,9 @@ export struct Tuijian{
               ListItem(){
                 OneItem({
                   oneItem:item,
-                  currentarea:this.currentArea
                 })
               }
-            }, (item: Article) => item.id)
+            }, (item: Article) => String(item.id))
           }
           .scrollBar(BarState.On)
           .padding({ left: 16, right: 16 })
@@ -146,13 +196,12 @@ export struct Tuijian{
 @Component
 export struct OneItem{
   @ObjectLink oneItem: Article;
-  @Link currentarea:string
   build() {
     Row(){
       //左文字
       //文字上下排布
       Column(){
-        Text(this.oneItem.title)//标题
+        Text(this.oneItem.name)//标题
           .height(19)
           .width('100%')
           .fontSize(16)
@@ -162,7 +211,7 @@ export struct OneItem{
           .fontWeight(400)
           .margin({ top: 4 })
           .fontColor(Color.White)
-        Text(this.oneItem.brief)//简介
+        Text(this.oneItem.description)//简介
           .height(32)
           .width('100%')
           .fontSize(12)
@@ -178,7 +227,7 @@ export struct OneItem{
       .alignItems(HorizontalAlign.Start)
       .margin({ right: 12 })
       //右图片
-      Image(this.oneItem.imgSource)
+      Image(this.oneItem.cover_image)
         .height(64)
         .width(108)
         .objectFit(ImageFit.Cover)
@@ -196,9 +245,8 @@ export struct OneItem{
         router.pushUrl({
           url:'pages/next_tuijian',
           params:{
-            'title':this.oneItem.title,
-            'area':this.currentarea,
-            'breif':this.oneItem.brief
+            'title':this.oneItem.name,
+            'area':this.oneItem.city
           }
         })
       }
